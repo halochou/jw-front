@@ -1,0 +1,57 @@
+<!doctype html> 
+<html>
+    <head>
+        <meta content="charset=utf-8"/>
+        <script type="text/javascript" src="./jwplayer.js"></script>
+    </head>
+    <body>
+        <div id="container">Loading the player ...</div>
+        <script type="text/javascript">
+            // jwplayer("container").setup({
+            //               autostart:true,
+            //               flashplayer: "./jwplayer.flash.swf",
+            //               file: "rtmp://182.92.4.139:1935/live/pi",
+            //               image: "./backgroud.png",
+            //               rtmp: { 
+            //                         bufferlength: 0.3 
+            //                     },
+            //               height: window.innerHeight-15,
+            //               width: window.innerWidth-15
+            // });
+
+            jwplayer("container").setup({
+                    autostart:true,
+                    controls:false,
+                    sources: [{
+                        file: "rtmp://182.92.4.139:1935/live/pi"
+                    },{
+                        file: "http://182.92.4.139:1935/live/pi/playlist.m3u8"
+                    }],
+                    rtmp: {
+                        bufferlength: 0.3
+                    },
+                    // fallback: false,
+                    primary: "flash"
+                });
+
+            window.addEventListener('resize', function() {
+                jwplayer().resize(window.innerWidth-15,window.innerHeight-15);
+            });
+        </script>
+        <!--
+        <h1>我可以正常的显示中文了</h1>
+        <p>
+            first program
+            <br/>
+            <a href="http://www.baidu.com">My name is zhou!</a>
+        </p>
+        <p>
+            nihaowozuoyigecueshi
+            <br/>
+            <img src="img.png" width="128" height="128"></img>
+        </p>
+        -->
+    <body style="overflow:-Scroll;overflow-y:hidden;overflow-x:hidden" /> 
+    </body>
+</html>
+

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style type="text/css">
+    html,body {
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="player"></div>
+
+      
+  <script src="/assets/global/js/jquery-1.10.2.min.js"></script>
+    <script src="/assets/jwplayer/jwplayer.js"></script>
+    <script src="http://cdn.aodianyun.com/dms/rop_client.js"></script>
+    <script type="text/javascript">jwplayer.key="L25RnMKI8RZc6Er7wdf08DO/yFt1MZ6/8vUgPiJG83w=";</script>
+  <script type="text/javascript">
+    var feestatus = '1';
+      var jpData = {
+          id : '243',
+          Display : '1',
+          playAddr : 'rtmp://1212.lssplay.aodianyun.com/watch/',
+          stream : '8yugql',
+          skin : '/assets/jwplayer/skins/bekle.xml',
+          viewNumURL : '/?c=activity&a=Analysis&id=243&platform=pc',
+          onlineURL : '/?c=activity&a=online&id=243',
+          onlineTimeStamp : '/?c=activity&a=online&id=243?timestamp=',
+          watchTimeURL : '/?c=activity&a=WatchTime'
+      };
+      var filestr;
+    if(jpData.Display != '1') {
+        filestr = jpData.playAddr;
+    }else {
+        filestr = jpData.playAddr + jpData.stream;
+    }
+    jwplayer("player").setup({
+        file : filestr,
+        image: 'http://storage.kkyoo.com/assets/upload/@OSS_my_143383874967838.jpg',
+        androidhls:true,
+        autostart:false,
+        width:'100%',
+        height:'100%',
+        stretching:'exactfit',
+        rtmp: {
+            bufferlength: 0.1
+        },
+        logo:{
+            hide:true
+        },
+        skin: jpData.skin
+    });
+
+    $.get(jpData.viewNumURL,function(data){
+        // $("#viewNum").html(data.num);
+    },'json');
+
+    $.get(jpData.onlineURL);
+
+    function ajaxTest() {
+        $.get(jpData.onlineTimeStamp + new Date().getTime());
+    }
+
+    setInterval(ajaxTest,1000*60);
+
+    jwplayer("player").onReady(function(){
+      var feeTimer= 0,
+          watchTime=0;
+
+            jwplayer().setControls(false);
+
+      jwplayer("player").onPlay(function(){
+          jwplayer().setControls(true);
+          clearInterval(feeTimer);
+          feeTimer=setInterval(function(){
+              watchTime++;
+              if(watchTime>60){
+                  var tempTime=watchTime;
+                  watchTime=0;
+                  $.post(jpData.watchTimeURL,{id:jpData.id,time:tempTime});
+              }
+          },1000)
+      })
+
+      jwplayer("player").onBuffer(function(){
+      });
+
+      jwplayer("player").onIdle(function(){
+          clearInterval(feeTimer);
+      });
+
+      jwplayer("player").onComplete(function(){
+          clearInterval(feeTimer);
+      });
+
+      jwplayer("player").onError(function(message){
+        clearInterval(feeTimer);
+      });
+
+      jwplayer("player").onPause(function(){
+        clearInterval(feeTimer);
+      });
+    });
+  </script>
+  <script>
+    $.get('/?a=listenlivestatus&c=activity&stream='+jpData.stream,function(data){
+            if(data == 1){
+                jwplayer().setControls(true);
+                jwplayer("player").play(true);
+            }else {
+                jwplayer("player").stop();
+            }
+        });
+    var ropData = {
+          id : '243',
+          pubkey : 'pub_7a97c68c-f133-7756-afd4-48998261d8f6',
+          subkey : 'sub_97c38db5-7133-7756-afd4-4876319b84e1'
+      };
+    ROP.Enter(ropData.pubkey,ropData.subkey);//pub-key,sub-key
+
+        ROP.On("enter_suc",function(){
+            ROP.Subscribe('stream-event');
+        });
+
+        ROP.On("enter_fail",function(err){
+            setTimeout(function(){
+                ROP.Enter(ropData.pubkey,ropData.subkey);//pub-key,sub-key
+            },1000);
+        });
+
+        ROP.On("publish_data",function(data,topic){
+          if(topic == 'stream-event') {
+            datajson = JSON.parse(data);
+                if(datajson.stream == jpData.stream && datajson.event == '1') {
+                    jwplayer().setControls(true);
+                  jwplayer("player").play(true);
+                }else if(datajson.stream == jpData.stream && datajson.event == '0'){
+                    jwplayer().setControls(false);
+          jwplayer("player").stop();
+                }
+          }
+        });
+        ROP.On("losed",function(){
+            ROP.Enter(ropData.pubkey,ropData.subkey);//pub-key,sub-key
+        });
+  </script>
+</body>
